@@ -6,6 +6,8 @@ library(openxlsx)
 library(stringr)
 library(readxl)
 
+# ACA GENERE UN CAMBIO
+
 CAJA <- odbcConnect("caja;UID=d26673516;PWD=manzanas14;DBQ=CAJA;DBA=W;APA=T;EXC=F;FEN=T;QTO=T;FRC=10;FDL=10;LOB=T;RST=T;BTD=F;BNF=F;BAM=IfAllSuccessful;NUM=
                     NLS;DPM=F;MTS=T;MDI=F;CSR=F;FWC=F;FBS=64000;TLO=O;MLD=0;ODA=F", believeNRows=FALSE)
 
@@ -28,7 +30,7 @@ Cajajubitestusu.Pagocalc Pa                                     WHERE Pa.Pagcalp
 
 Retros <- sqlQuery(CAJA,paste("SELECT REC.REBEIMPORT,REC.JBSOLNUMER FROM CAJAJUBITESTUSU.RECBENE3 REC WHERE REC.CPLCOD = 1026 AND REC.RECEMINRO = '201812'"), as.is = T)
 
-TopeVig <- sqlQuery(CAJA,paste("SELECT EXTRACT(month FROM CAITVIGENC) Mes, EXTRACT(year FROM CAITVIGENC) Año , CAITOPEJUB FROM CAJAJUBITESTUSU.CAITOPE cau"), as.is = T)
+TopeVig <- sqlQuery(CAJA,paste("SELECT EXTRACT(month FROM CAITVIGENC) Mes, EXTRACT(year FROM CAITVIGENC) AÃ±o , CAITOPEJUB FROM CAJAJUBITESTUSU.CAITOPE cau"), as.is = T)
 
 minimo <- sqlQuery(CAJA,paste("SELECT EXTRACT(MONTH FROM CAIMVIGENC)MONTH, EXTRACT(YEAR FROM CAIMVIGENC) YEAR, CAIMINIMO FROM CAJAJUBITESTUSU.CAIMINIM"), as.is = T)
 
@@ -87,7 +89,7 @@ BaseParaTrabajar1 <-
   arrange(BaseParaTrabajar1, desc(BaseParaTrabajar1$DiferenciaMeses))
 
 
-#Cálculo para dos índices
+#CÃ¡lculo para dos Ã­ndices
 BaseParaTrabajar2$Pasada2 <- 0
 BaseParaTrabajar2$Trabajado2 <- 0
 BaseParaTrabajar2$PAGCAL9997N <- 0
@@ -242,9 +244,9 @@ BaseParaTrabajarMayorTope$Pagcal9002N <- ifelse(BaseParaTrabajarMayorTope$Pagcal
  CalcTope  <-function(bas,diferenciaMeses,porPen,porDis){
    if ( diferenciaMeses != 0) {
    mes <- 12 - diferenciaMeses
-   año <- 2018 
+   aÃ±o <- 2018 
    bas <- bas * porPen
-   Tope <- TopeVig[TopeVig$MES == mes & TopeVig$AÑO == 2018 , 3 ]
+   Tope <- TopeVig[TopeVig$MES == mes & TopeVig$AÃ‘O == 2018 , 3 ]
   
    Tope <- as.numeric(sub(",", ".", Tope , fixed = TRUE))
      
@@ -269,9 +271,9 @@ BaseParaTrabajarMayorTope$Pagcal9002N <- ifelse(BaseParaTrabajarMayorTope$Pagcal
  
 Minimo <- function(bas,diferenciaMeses,porPen,porDis){
   mes <- 12 - diferenciaMeses
-  año <- 2018
+  aÃ±o <- 2018
   bas <- bas * porPen
-  minimo2 <- minimo[minimo$MONTH == mes & minimo$YEAR == año, minimo$CAIMINIMO]
+  minimo2 <- minimo[minimo$MONTH == mes & minimo$YEAR == aÃ±o, minimo$CAIMINIMO]
   
   if ( bas < minimo2){
    bas997min <- minimo2 
