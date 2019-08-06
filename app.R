@@ -13,7 +13,7 @@ library(scales)
 library(highcharter)
 library(shinydashboard)
 library(shinyjs)
-library(PruebaLibreria)
+#library(PruebaLibreria)
 library(formattable)
 
 # CARGA CANTIDAD DE BENEFICIOS
@@ -59,18 +59,26 @@ load("C:/BECHER/RDA/RRHH_detalleComisiones.rda")
 load("C:/BECHER/RDA/RRHH_Productividad.rda")
 rh_productividad$periodo <- paste(rh_productividad$AÑO, "-", rh_productividad$MES, sep= "")
 
+load("C:/Users/20390538333/Desktop/Tesis/RDA/variacionGasto.rda")
 
-#GASTO MENSUAL_ IND 26 Y 28
-gastoMensual <- getGastoMensual()
+load("C:/Users/20390538333/Desktop/Tesis/RDA/variacionIngreso.rda")
 
-#VARIACION MENSUAL Y ANUAL DEL GASTO (52 = MENSUAL ;  53 = ANUAL)
-VariacionGasto <- getVariacionGasto()
+load("C:/Users/20390538333/Desktop/Tesis/RDA/gastoMensual.rda")
 
-#INGRESO MENSUAL IND 44
-ingresoMensual <- getIngresoMensual()
+load("C:/Users/20390538333/Desktop/Tesis/RDA/ingresoMensual.rda")
 
-#VARIACION MENSUAL Y ANUAL DEL INGRESO (54 = MENSUAL ;  55 = ANUAL)
-variacionIngreso <- getVariacionIngreso()
+# 
+# #GASTO MENSUAL_ IND 26 Y 28
+# gastoMensual <- getGastoMensual()
+# 
+# #VARIACION MENSUAL Y ANUAL DEL GASTO (52 = MENSUAL ;  53 = ANUAL)
+# VariacionGasto <- getVariacionGasto()
+# 
+# #INGRESO MENSUAL IND 44
+# ingresoMensual <- getIngresoMensual()
+# 
+# #VARIACION MENSUAL Y ANUAL DEL INGRESO (54 = MENSUAL ;  55 = ANUAL)
+# variacionIngreso <- getVariacionIngreso()
 
 
 ###############  HEADER ###############
