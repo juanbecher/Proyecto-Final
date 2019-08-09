@@ -89,7 +89,7 @@ body <- dashboardBody(
             
             br(),
             hr(),
-            wellPanel(style = "background-color: white;",
+            wellPanel(style = "background-color : #F0F7F4;",
                       
                       
                       
