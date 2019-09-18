@@ -177,7 +177,7 @@ body <- dashboardBody(
               #tags$hr()
               valueBoxOutput("ultimoMesBeneficio")
             ),
-            wellPanel(
+            
 
               tabsetPanel(
                 tabPanel("Gráfico",
@@ -234,7 +234,7 @@ body <- dashboardBody(
                          DT::dataTableOutput("tablaProyeccionAltas"))
               )
 
-            )
+            
 
     ),
     tabItem(tabName = "DemoraBeneficios",
@@ -1545,7 +1545,7 @@ server <- function(input, output, session) {
       value =  n,
       subtitle = "Futuras altas anuales",
       icon = icon("chart-area"),
-      color = "aqua"
+      color = "light-blue"
     )
   })
 
@@ -1629,7 +1629,7 @@ server <- function(input, output, session) {
       value =  dato$TPINDDVAL,
       subtitle = texto,
       icon = icon("address-book"),
-      color = "light-blue"
+      color = "aqua"
     )
   })
 

@@ -15,7 +15,7 @@
 
 
 .selectize-input.full {
-  background-color: #E8EAEC ; font-size: 20px; line-height: 20px;
+  background-color: #ecf0f5 ; font-size: 20px; line-height: 20px;
   
 } 
 .selectize-input {
@@ -27,12 +27,20 @@
   background-color:#E8EAEC; font-size: 20px; line-height: 20px; 
 } 
 
-.well{
-  background-color:#E8EAEC;
+.well {
+  background-color:#ecf0f5;
   
 }
 
 label{
   color: #005c64;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+  background-color: #ecf0f5;
+}
+
+.btn-default{
+  background-color: #ecf0f5;
 }
 
