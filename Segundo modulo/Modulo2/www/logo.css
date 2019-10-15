@@ -1,0 +1,46 @@
+
+
+.skin-black .main-header>.logo {
+    background-color: #005c64 !important;
+
+}
+
+
+
+
+
+.skin-black .main-header .navbar {
+    background-color: #005c64;
+}
+
+
+.selectize-input.full {
+  background-color: #ecf0f5 ; font-size: 20px; line-height: 20px;
+  
+} 
+.selectize-input {
+      border: 1px solid #005c64;
+  
+} 
+
+.selectize-dropdown {
+  background-color:#E8EAEC; font-size: 20px; line-height: 20px; 
+} 
+
+.well {
+  background-color:#ecf0f5;
+  
+}
+
+label{
+  color: #005c64;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+  background-color: #ecf0f5;
+}
+
+.btn-default{
+  background-color: #ecf0f5;
+}
+
