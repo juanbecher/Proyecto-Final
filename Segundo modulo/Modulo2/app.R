@@ -20,6 +20,7 @@ library(formattable)
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Modulo 2/DF_Retro.rda")
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Dato_basico.rda")
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Dato_baseImp.rda")
+load("C:/Users/20390538333/Desktop/Proyecto/RDA/Sectores.rda")
 header <- dashboardHeader(
   title = span(tags$img(src="Isotipo.png", width = '50', height = '45'))
 )
@@ -83,27 +84,39 @@ body <- dashboardBody(
               #tags$hr()
               valueBoxOutput("KPI_Retro3")
             ),
+            wellPanel(
             fluidRow(
               column(4,
                      dateInput(format = "dd-mm-yyyy",
                        inputId = "Fecha_retro",
                        label = h5(strong("Ingrese fecha de retro"), style = "font-family: Arial;")
                      )
-              )
+              ),
+              column(4,offset = 1,
+                     selectInput(
+                       inputId = "Sector_retro",
+                       label = h5(strong("Sector"), style = "font-family: Arial;"),
+                       width = '100%',
+                       choices = c("Todos",Sectores$Sector),
+                       selected = "Todos"
+                     ))
             ),
             br(),
             wellPanel(
               DT::dataTableOutput("tablaRetro")
-              )),
+              ))
+            ),
     tabItem(tabName = "basico",
             fluidRow(
-              column(4,
-                     textInput(
+              column(6,
+                     selectInput(
                        inputId = "Sector_basico",
-                       label = h5(strong("Sector"), style = "font-family: Arial;")
+                       label = h5(strong("Sector"), style = "font-family: Arial;"),
+                       width = '100%',
+                       choices = Sectores$Sector
                      )
               ),
-              column(3,offset = 2,
+              column(3,offset = 1,
                      numericInput(
                        inputId = "Porcentaje_sector",
                        label = h5(strong("Porcentaje aumento"), style = "font-family: Arial;"),
@@ -133,11 +146,11 @@ server <- function(input, output, session) {
     Dato <- getProyeccionBaseImp(input$Sector, (input$Porcentaje/100) )
     #Dato_baseImp <- getProyeccionBaseImp("Municipalidad", 0.7)
     
-    Dato1 <- as.data.frame( c("Sueldo","Gasto"))
+    Dato1 <- as.data.frame( c("Sueldo Promedio","Gasto Promedio"))
     colnames(Dato1)[1] <- "Tipo"
     Dato1$Valor <- c(mean(Dato$Sueldo),mean(Dato$Gasto))
     
-    Dato2 <- as.data.frame( c("Sueldo","Gasto"))
+    Dato2 <- as.data.frame( c("Sueldo Promedio","Gasto Promedio"))
     colnames(Dato2)[1] <- "Tipo"
     Dato2$Valor <- c(mean(Dato$SueldoE2.1),mean(Dato$GastoE2.1))
     
@@ -148,7 +161,7 @@ server <- function(input, output, session) {
       hc_add_series(data = Dato2, name = "Proyeccion", type = "column", hcaes(x = Tipo, y = Valor), color = c("#84C77E") ) %>%
       # hc_add_series(data = Dato, name = "Jubilacón", type = input$type, hcaes(x = mesAnio, y = J), color = c("#DFCA63") ) %>%
       # hc_add_series(data = Dato, name = "Pensión", type = input$type, hcaes(x = mesAnio, y = P), color = c("#EEA13F") ) %>%
-      hc_title(text = "<span style=\"color:#005c64;font-family: Arial ; font-size: 25px\"> Nuevos Beneficios </span> ", useHTML = TRUE) %>%
+      hc_title(text = "<span style=\"color:#005c64;font-family: Arial ; font-size: 25px\"> Base imponible </span> ", useHTML = TRUE) %>%
       
       hc_xAxis(title = list(text = "Tipo")) %>%
       hc_yAxis(title = list(text = "Cantidad"))
@@ -163,14 +176,32 @@ server <- function(input, output, session) {
     fecha1 <- input$Fecha_retro
     fecha <- paste(substr(fecha1,9,10),"/",substr(fecha1,6,7),"/",substr(fecha1,1,4), sep = "")
     
-    
+    tabla <- Dato_Retro
     #Dato_Retro <- getRetro("01/09/2019")
+    if (input$Sector_retro != "Todos") {
+      sector <- substr(input$Sector_retro,1,6)
+      tabla <- tabla[tabla$PAGCALSECT == sector, ]
+    }
+    validate(
+      need(nrow(tabla) != 0, ("EL SECTOR SELECCIONADO NO TUVO RETROACTIVIDAD"))
+    )
     
-    tabla <- Dato_Retro[ , -c(2:12)]
+    tabla <- tabla[ , -c(2,4:12)]
+    colnames(tabla)[8] <- "Descripcion"
+    tabla$Descripcion <- ifelse(tabla$Descripcion == 1, "Incorrecto","Correcto")
     DT::datatable(tabla)})
   
   output$KPI_Retro <- renderValueBox({
-    prom <- mean(Dato_Retro$Retro)
+    tabla <- Dato_Retro
+    if (input$Sector_retro != "Todos") {
+      sector <- substr(input$Sector_retro,1,6)
+      tabla <- tabla[tabla$PAGCALSECT ==sector, ]
+    }
+    
+    prom <- mean(tabla$Retro)
+    if (nrow(tabla) == 0) {
+      prom <- 0
+    }
     valueBox(
       value =  round(prom,2),
       subtitle = paste("Promedio retroactividad"),
@@ -180,7 +211,16 @@ server <- function(input, output, session) {
   })
   
   output$KPI_Retro2 <- renderValueBox({
-    suma <- sum(Dato_Retro$Retro)
+    tabla <- Dato_Retro
+    if (input$Sector_retro != "Todos") {
+      sector <- substr(input$Sector_retro,1,6)
+      tabla <- tabla[tabla$PAGCALSECT == sector, ]
+    }
+    
+    suma <- sum(tabla$Retro)
+    if (nrow(tabla) == 0) {
+      suma <- 0
+    }
     valueBox(
       value =  round(suma,2),
       subtitle = paste("Total retroactividad"),
@@ -190,7 +230,16 @@ server <- function(input, output, session) {
   })
   
   output$KPI_Retro3 <- renderValueBox({
-    cantidad <- as.numeric(length(unique(Dato_Retro$PAGCALSOLN)))
+    tabla <- Dato_Retro
+    if (input$Sector_retro != "Todos") {
+      sector <- substr(input$Sector_retro,1,6)
+      tabla <- tabla[tabla$PAGCALSECT == sector, ]
+    }
+    
+    cantidad <- as.numeric(length(unique(tabla$PAGCALSOLN)))
+    if (nrow(tabla) == 0) {
+      cantidad <- 0
+    }
     valueBox(
       value =  cantidad,
       subtitle = paste("Cantidad solicitudes pagadas"),
@@ -205,7 +254,10 @@ server <- function(input, output, session) {
     #   need(input$IAnioDesde <= input$IAnioHasta & input$IAnioDesde <= (year(Sys.Date())), ("FECHAS INGRESADAS NO VALIDAS"))
     # )
     #print(input$Sector_basico)
-    Dato <- getBasico(input$Sector_basico, input$Porcentaje_sector)
+    sector <- input$Sector_basico
+    sector <- substr(sector,1,6)
+    #sector <- as.numeric(sector)
+    Dato <- getBasico(sector, input$Porcentaje_sector/100)
     #Dato_basico <- getBasico("020100",10)
     #Dato <- getProyeccionBaseImp("Municipalidad", 0.7)
     #prue <- dcast(Prueba,Cuil2 + PERAPE + PERNOM + SECTOR ~ DESCRIPCIONAUSENCIA.1, var = "cant")
