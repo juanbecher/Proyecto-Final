@@ -15,12 +15,23 @@ library(shinydashboard)
 library(shinyjs)
 library(PruebaLibreria)
 library(formattable)
-
+load("C:/BECHER/RDA/Beneficios.rda")
+cantBeneficios <- as.numeric(nrow(Beneficios))
+cantBeneficios <- prettyNum(cantBeneficios, scientific = FALSE, big.mark= ",")
 
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Modulo 2/DF_Retro.rda")
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Dato_basico.rda")
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Dato_baseImp.rda")
 load("C:/Users/20390538333/Desktop/Proyecto/RDA/Sectores.rda")
+
+
+Dato_baseImp$SueldoE2.1 <- round(Dato_baseImp$SueldoE2.1 ,2)
+Dato_baseImp$GastoE2.1 <- round(Dato_baseImp$GastoE2.1 ,2)
+
+Dato_Retro$Retro <- round(Dato_Retro$Retro ,2)
+Dato_Retro$Suma <- round(Dato_Retro$Suma ,2)
+
+
 header <- dashboardHeader(
   title = span(tags$img(src="Isotipo.png", width = '50', height = '45'))
 )
@@ -29,14 +40,14 @@ sidebar <- dashboardSidebar(
   
   sidebarMenu(
     menuItem("HOME", tabName = "Home", icon = icon("home")
-  ),
-  menuItem("Proyecciones", tabName = "Proyecciones", icon = icon("chart-line"),
-           menuSubItem("Variacion base imp", tabName = "baseImp"),
-           menuSubItem("Retroactividad", tabName = "retro"),
-           menuSubItem("Basico", tabName = "basico")
+    ),
+    menuItem("Proyecciones", tabName = "Proyecciones", icon = icon("chart-line"),
+             menuSubItem("Variacion base imp", tabName = "baseImp"),
+             menuSubItem("Retroactividad", tabName = "retro"),
+             menuSubItem("Basico", tabName = "basico")
+    )
+    
   )
-  
-)
 )
 
 body <- dashboardBody(
@@ -48,12 +59,40 @@ body <- dashboardBody(
             fluidRow(
               h1(strong("Portal de transparencia"), style = "font-family: 'Times New Roman', cursive; text-align: center; color: #202D33;")
               
-            )),
-    tabItem(tabName = "Proyecciones",
-          fluidRow(
-            h1(strong("Portal de transparencia"), style = "font-family: 'Times New Roman', cursive; text-align: center; color: #202D33;")
+            ),
             
-          )),
+            br(),
+            hr(),
+            wellPanel(
+              #style = "background-color: white;",
+              
+              
+              
+              
+              #h3("\n Cantidad de beneficios"),
+              h2("Total prestaciones \n ", cantBeneficios, style = "font-family:'Times New Roman'; text-align: center"),
+              
+              br(),
+              fluidRow(
+                column(6, highchartOutput("tortaCantidadBeneficiosPOJ", height = "350px")),
+                column(6, highchartOutput("tortaCantidadBeneficiosSEXO", height = "350px"))
+              )
+              
+              
+              
+              
+              
+              
+              
+            )
+            
+            
+    ),
+    tabItem(tabName = "Proyecciones",
+            fluidRow(
+              h1(strong("Portal de transparencia"), style = "font-family: 'Times New Roman', cursive; text-align: center; color: #202D33;")
+              
+            )),
     tabItem(tabName = "baseImp",
             fluidRow(
               column(4,
@@ -85,27 +124,27 @@ body <- dashboardBody(
               valueBoxOutput("KPI_Retro3")
             ),
             wellPanel(
-            fluidRow(
-              column(4,
-                     dateInput(format = "dd-mm-yyyy",
-                       inputId = "Fecha_retro",
-                       label = h5(strong("Ingrese fecha de retro"), style = "font-family: Arial;")
-                     )
+              fluidRow(
+                column(4,
+                       dateInput(format = "dd-mm-yyyy",
+                                 inputId = "Fecha_retro",
+                                 label = h5(strong("Ingrese fecha de retro"), style = "font-family: Arial;")
+                       )
+                ),
+                column(4,offset = 1,
+                       selectInput(
+                         inputId = "Sector_retro",
+                         label = h5(strong("Sector"), style = "font-family: Arial;"),
+                         width = '100%',
+                         choices = c("Todos",Sectores$Sector),
+                         selected = "Todos"
+                       ))
               ),
-              column(4,offset = 1,
-                     selectInput(
-                       inputId = "Sector_retro",
-                       label = h5(strong("Sector"), style = "font-family: Arial;"),
-                       width = '100%',
-                       choices = c("Todos",Sectores$Sector),
-                       selected = "Todos"
-                     ))
-            ),
-            br(),
-            wellPanel(
-              DT::dataTableOutput("tablaRetro")
+              br(),
+              wellPanel(
+                DT::dataTableOutput("tablaRetro")
               ))
-            ),
+    ),
     tabItem(tabName = "basico",
             fluidRow(
               column(6,
@@ -129,7 +168,7 @@ body <- dashboardBody(
               highchartOutput("grafico_basico", height = "600px")))
     
   )
-
+  
 )
 #c("080100-080200(Muni)", "060100-060300(Bancarios)","070100-070200(EPEC)"),
 
@@ -137,13 +176,54 @@ body <- dashboardBody(
 ui <- dashboardPage(skin = "black",header, sidebar, body)
 
 server <- function(input, output, session) {
+  
+  output$tortaCantidadBeneficiosPOJ <- renderHighchart({
+    dato <- Beneficios %>%
+      group_by(JBSOLPOJ) %>% summarise(cant = n())
+    dato$JBSOLPOJ <- ifelse(dato$JBSOLPOJ == "J", "Jubilación", "Pensión")
+    dato$cant <- comma(dato$cant, format = "f", big.mark = ",")
+    
+    highchart() %>%
+      #   hc_add_series(data = dato, hcaes(JBSOLPOJ, cant), type = "pie", color = c("green","pink"),
+      #                 tooltip = list(pointFormat = "<br><b>{point.percentage:.1f}%</b><br>{point.cant}")) %>%
+      #   hc_tooltip(crosshairs = TRUE,  borderWidth = 5, sort = TRUE, shared = TRUE, table = FALSE) %>%
+      #
+      #   hc_title(text = "Porcentaje por P y J",
+      #          margin = 20,
+      #          style = list(color = "#144746", useHTML = TRUE))
+      hc_chart(type = "pie") %>%
+      hc_add_series_labels_values(labels = dato$JBSOLPOJ, values = dato$cant, text = dato$cant, color = c("#84C77E", "#144746")) %>%
+      hc_tooltip(crosshairs = TRUE, borderWidth = 5, sort = TRUE, shared = TRUE, table = FALSE,
+                 pointFormat = paste('{point.y} <br/><b>{point.percentage:.1f}%</b>'))%>%
+      hc_title(text = "Porcentaje por pensión y jubilación",
+               margin = 20,
+               style = list(color = "#144746", useHTML = TRUE))
+    
+  })
+  ##################A
+  output$tortaCantidadBeneficiosSEXO <- renderHighchart({
+    dato <- Beneficios %>%
+      group_by(PERSEXO) %>% summarise(cant = n())
+    dato$PERSEXO <- ifelse(dato$PERSEXO == "M", "Masculino", "Femenino")
+    dato$cant <- as.numeric(dato$cant)
+    #dato$cant <- as.numeric(prettyNum(dato$cant, big.mark = ",", scientific = FALSE))
+    highchart() %>%
+      hc_chart(type = "pie") %>%
+      hc_add_series_labels_values(labels = dato$PERSEXO, values = dato$cant, color = c("#73A7D9", "#F36868")) %>%
+      hc_tooltip(crosshairs = TRUE, borderWidth = 5, sort = TRUE, shared = TRUE, table = FALSE, pointFormat = paste('{point.y} <br/><b>{point.percentage:.1f}%</b>'))%>%
+      hc_title(text = "Porcentaje por sexo",
+               margin = 20,
+               style = list(color = "#144746", useHTML = TRUE))
+    
+  })
   output$baseImp <- renderHighchart({
     
     # validate(
     #   need(input$IAnioDesde <= input$IAnioHasta & input$IAnioDesde <= (year(Sys.Date())), ("FECHAS INGRESADAS NO VALIDAS"))
     # )
     
-    Dato <- getProyeccionBaseImp(input$Sector, (input$Porcentaje/100) )
+    #Dato <- getProyeccionBaseImp(input$Sector, (input$Porcentaje/100) )
+    Dato <- Dato_baseImp
     #Dato_baseImp <- getProyeccionBaseImp("Municipalidad", 0.7)
     
     Dato1 <- as.data.frame( c("Sueldo Promedio","Gasto Promedio"))
@@ -157,8 +237,8 @@ server <- function(input, output, session) {
     highchart() %>%
       #hc_chart(type= input$type) %>%
       hc_xAxis(type="category") %>%
-      hc_add_series(data = Dato1, name = "Vigente", type = "column", hcaes(x = Tipo, y = Valor), color = c("#68BAF3") ) %>%
-      hc_add_series(data = Dato2, name = "Proyeccion", type = "column", hcaes(x = Tipo, y = Valor), color = c("#84C77E") ) %>%
+      hc_add_series(data = Dato1, name = "Vigente", type = "column", hcaes(x = Tipo, y = round(Valor,2)), color = c("#68BAF3") ) %>%
+      hc_add_series(data = Dato2, name = "Proyeccion", type = "column", hcaes(x = Tipo, y = round(Valor,2)), color = c("#84C77E") ) %>%
       # hc_add_series(data = Dato, name = "Jubilacón", type = input$type, hcaes(x = mesAnio, y = J), color = c("#DFCA63") ) %>%
       # hc_add_series(data = Dato, name = "Pensión", type = input$type, hcaes(x = mesAnio, y = P), color = c("#EEA13F") ) %>%
       hc_title(text = "<span style=\"color:#005c64;font-family: Arial ; font-size: 25px\"> Base imponible </span> ", useHTML = TRUE) %>%
@@ -170,7 +250,7 @@ server <- function(input, output, session) {
     
   })
   
-
+  
   
   output$tablaRetro <- DT::renderDataTable({
     fecha1 <- input$Fecha_retro
@@ -257,7 +337,8 @@ server <- function(input, output, session) {
     sector <- input$Sector_basico
     sector <- substr(sector,1,6)
     #sector <- as.numeric(sector)
-    Dato <- getBasico(sector, input$Porcentaje_sector/100)
+    #Dato <- getBasico(sector, input$Porcentaje_sector/100)
+    Dato <- Dato_basico
     #Dato_basico <- getBasico("020100",10)
     #Dato <- getProyeccionBaseImp("Municipalidad", 0.7)
     #prue <- dcast(Prueba,Cuil2 + PERAPE + PERNOM + SECTOR ~ DESCRIPCIONAUSENCIA.1, var = "cant")
@@ -274,8 +355,8 @@ server <- function(input, output, session) {
     highchart() %>%
       #hc_chart(type= input$type) %>%
       hc_xAxis(type="category") %>%
-      hc_add_series(data = Dato1, name = "Vigente", type = "column", hcaes(x = Tipo, y = Valor), color = c("#68BAF3") ) %>%
-      hc_add_series(data = Dato2, name = "Proyeccion", type = "column", hcaes(x = Tipo, y = Valor), color = c("#84C77E") ) %>%
+      hc_add_series(data = Dato1, name = "Vigente", type = "column", hcaes(x = Tipo, y = round(Valor,2)), color = c("#68BAF3") ) %>%
+      hc_add_series(data = Dato2, name = "Proyeccion", type = "column", hcaes(x = Tipo, y = round(Valor,2)), color = c("#84C77E") ) %>%
       # hc_add_series(data = Dato, name = "Jubilacón", type = input$type, hcaes(x = mesAnio, y = J), color = c("#DFCA63") ) %>%
       # hc_add_series(data = Dato, name = "Pensión", type = input$type, hcaes(x = mesAnio, y = P), color = c("#EEA13F") ) %>%
       hc_title(text = "<span style=\"color:#005c64;font-family: Arial ; font-size: 25px\"> Proyeccion de basico </span> ", useHTML = TRUE) %>%
@@ -291,4 +372,3 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
